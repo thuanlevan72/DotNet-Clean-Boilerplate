@@ -28,6 +28,7 @@ ehthumbs_vista.db
 *.user
 *.userosscache
 *.sln.docstates
+* csproj.lscache
 
 # File log và cache của Visual Studio
 *.suo

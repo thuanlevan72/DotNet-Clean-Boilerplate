@@ -26,7 +26,7 @@ public static class DependencyInjection
                 isKafkaAlive = true;
                 Console.WriteLine("✅ Kafka Server OK!");
             }
-            catch
+            catch(Exception ex)
             {
                 Console.WriteLine("⚠️ Kafka sập! Bật chế độ Fallback...");
             }
