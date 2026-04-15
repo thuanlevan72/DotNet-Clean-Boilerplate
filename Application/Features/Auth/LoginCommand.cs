@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Features.Auth;
 
-public record LoginCommand(string Email, string Password) : IRequest<AuthResultDto>;
+public record LoginCommand(string Email, string Password, string deviceId) : IRequest<AuthResultDto>;
 
 public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
 {
@@ -17,6 +17,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
 
     public async Task<AuthResultDto> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        return await _authService.LoginAsync(request.Email, request.Password);
+        return await _authService.LoginAsync(request.Email, request.Password, request.deviceId);
     }
 }

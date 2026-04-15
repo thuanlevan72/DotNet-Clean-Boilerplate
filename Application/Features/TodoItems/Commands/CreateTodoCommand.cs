@@ -39,6 +39,8 @@ public record CreateTodoCommand(
     /// <summary>Mức độ ưu tiên (Low/Medium/High/Urgent)</summary>
     PriorityLevel Priority,
 
+    List<int>? Tags,
+
     /// <summary>Thời hạn hoàn thành (tùy chọn)</summary>
     DateTimeOffset? DueDate,
 
@@ -79,6 +81,7 @@ public class CreateTodoCommandHandler : IRequestHandler<CreateTodoCommand, Guid>
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
     private readonly IDistributedLockService _lockService;
+    private readonly ITagRepository _tagRepository;
 
     /// <summary>
     /// Constructor - Dependency Injection
@@ -95,13 +98,15 @@ public class CreateTodoCommandHandler : IRequestHandler<CreateTodoCommand, Guid>
         ICategoryRepository categoryRepository,
         IUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
-        IDistributedLockService lockService)
+        IDistributedLockService lockService,
+        ITagRepository tagRepository)
     {
         _todoRepository = todoRepository;
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
         _lockService = lockService;
+        _tagRepository = tagRepository;
     }
 
     /// <summary>
@@ -184,6 +189,7 @@ public class CreateTodoCommandHandler : IRequestHandler<CreateTodoCommand, Guid>
                     throw new Exception("Danh mục không tồn tại.");
             }
 
+
             /// <summary>
             /// Bước 5: Tạo TodoItem entity
             /// 
@@ -202,8 +208,22 @@ public class CreateTodoCommandHandler : IRequestHandler<CreateTodoCommand, Guid>
                 Priority = request.Priority,
                 Status = TodoStatus.Todo,
                 DueDate = request.DueDate,
-                CategoryId = request.CategoryId
+                CategoryId = request.CategoryId,
+               
+
             };
+
+            // truy vấn tag nếu có 
+
+            if (request.Tags?.Any() == true)
+            {
+                var tags = await _tagRepository.GetByConditionAsync(x=> request.Tags.Contains(x.Id), true,
+                    cancellationToken);
+
+                if (tags?.Any() == true)
+                    todo.Tags = tags;
+            }
+           
 
             /// <summary>Bước 6: Add todo vào repository (change tracker)</summary>
             _todoRepository.Add(todo);

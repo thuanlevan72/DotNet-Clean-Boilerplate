@@ -51,9 +51,12 @@ public class RedisCacheService : ICacheService
     public async Task<T> GetOrSetAsync<T>(string key, Func<CancellationToken, Task<T>> factory, TimeSpan? slidingExpiration = null, TimeSpan? absoluteExpiration = null, CancellationToken cancellationToken = default)
     {
         // 1. Thử lấy từ Cache
-        var cachedValue = await GetAsync<T>(key, cancellationToken);
-        if (cachedValue != null) return cachedValue;
-
+         var cachedData = await _cache.GetStringAsync(key, cancellationToken);
+        // 2. Nếu chuỗi CÓ TỒN TẠI (kể cả nó là chữ "false") -> Đó là Cache Hit
+        if (!string.IsNullOrEmpty(cachedData ) && cachedData != "false")
+        {
+            return JsonSerializer.Deserialize<T>(cachedData, _jsonOptions)!;
+        }
         // 2. Nếu Cache miss, gọi hàm Factory (thường là truy vấn DB)
         var newValue = await factory(cancellationToken);
 

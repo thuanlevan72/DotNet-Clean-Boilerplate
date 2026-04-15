@@ -1,0 +1,20 @@
+<header class="bg-blue-600 text-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <!-- Logo -->
+    <div class="text-xl font-bold cursor-pointer" routerLink="/">MyApp</div>
+
+    <!-- Menu -->
+    <nav class="flex gap-4">
+      <a routerLink="/" class="hover:underline">Todo</a>
+      <a routerLink="/create" class="hover:underline">Create</a>
+    </nav>
+
+    <!-- Action -->
+    <button
+      (click)="logout()"
+      class="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100 transition"
+    >
+      Logout
+    </button>
+  </div>
+</header>

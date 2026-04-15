@@ -65,6 +65,8 @@ Dtos/
 Events/TodoCreatedEvent.cs
 Features/Auth/
  LoginCommand.cs
+ LogoutCommand.cs
+ RefreshTokenCommand.cs
  RegisterCommand.cs
 Features/Categories/Commands/
  BulkCreateCategoryCommand.cs

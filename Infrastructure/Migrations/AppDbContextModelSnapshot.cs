@@ -275,6 +275,28 @@ namespace Infrastructure.Postgres.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Infrastructure.Postgres.Identity.ApplicationToken", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("UserTokens", (string)null);
+                });
+
             modelBuilder.Entity("Infrastructure.Postgres.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -431,25 +453,6 @@ namespace Infrastructure.Postgres.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("UserTokens", (string)null);
-                });
-
             modelBuilder.Entity("TagTodoItem", b =>
                 {
                     b.Property<int>("TagsId")
@@ -506,6 +509,15 @@ namespace Infrastructure.Postgres.Migrations
                     b.Navigation("ParentTask");
                 });
 
+            modelBuilder.Entity("Infrastructure.Postgres.Identity.ApplicationToken", b =>
+                {
+                    b.HasOne("Infrastructure.Postgres.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Infrastructure.Postgres.Identity.ApplicationRole", null)
@@ -541,15 +553,6 @@ namespace Infrastructure.Postgres.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Infrastructure.Postgres.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
-                {
                     b.HasOne("Infrastructure.Postgres.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")

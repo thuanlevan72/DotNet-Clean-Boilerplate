@@ -1,5 +1,6 @@
 ﻿using Application.Features.TodoItems.Commands;
 using Application.Features.TodoItems.Queries;
+using Domain.Common.Pagination;
 using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -20,9 +21,9 @@ public class TodoItemsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMyTodos()
+    public async Task<IActionResult> GetMyTodos([FromQuery] GetMyTodosQuery request)
     {
-        var result = await _mediator.Send(new GetMyTodosQuery());
+        var result = await _mediator.Send(request);
         return Ok(result);
     }
 

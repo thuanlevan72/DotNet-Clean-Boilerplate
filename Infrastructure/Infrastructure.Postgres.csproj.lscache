@@ -66,8 +66,9 @@ Data/
 DependencyInjection.cs
 Identity/
  ApplicationRole.cs
+ ApplicationToken.cs
  ApplicationUser.cs
- AuthService.cs
+ Sevices/AuthService.cs
 Migrations/
  20260407141330_InitialCreate.cs
  20260407141330_InitialCreate.Designer.cs
@@ -79,6 +80,14 @@ Migrations/
  20260408143731_AddOutboxupdate.Designer.cs
  20260408143904_AddOutboxupdate2.cs
  20260408143904_AddOutboxupdate2.Designer.cs
+ 20260412143223_UpdateToken.cs
+ 20260412143223_UpdateToken.Designer.cs
+ 20260412143422_UpdateToken2.cs
+ 20260412143422_UpdateToken2.Designer.cs
+ 20260413112214_upadatedatabasetoken.cs
+ 20260413112214_upadatedatabasetoken.Designer.cs
+ 20260413113332_upadatedatabasetoken2.cs
+ 20260413113332_upadatedatabasetoken2.Designer.cs
  AppDbContextModelSnapshot.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs

@@ -1,4 +1,6 @@
-﻿using Domain.Entities.Base;
+﻿using Domain.Common.Pagination;
+using Domain.Entities.Base;
+using System.Linq.Expressions;
 
 namespace Domain.Repositories;
 
@@ -71,6 +73,25 @@ public interface IGenericRepository<TEntity, TId> where TEntity : BaseEntity<TId
     /// var activeTodos = todos.Where(x => !x.IsDeleted).ToList();
     /// </summary>
     Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lấy danh sách entities có phân trang (Dùng class Request/Response)
+    /// </summary>
+    Task<PagedResponse<TEntity>> GetPagedAsync(
+        PaginationRequest request,
+        bool trackChanges = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lấy danh sách entities có phân trang và điều kiện (Dùng class Request/Response)
+    /// </summary>
+    Task<PagedResponse<TEntity>> GetPagedByConditionAsync(
+        Expression<Func<TEntity, bool>> expression,
+        PaginationRequest request,
+        bool trackChanges = false,
+        CancellationToken cancellationToken = default);
+
+    Task<List<TEntity>> GetByConditionAsync(Expression<Func<TEntity, bool>> expression, bool trackChanges = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Thêm mới entity

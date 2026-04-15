@@ -7,7 +7,15 @@ using System.Reflection;
 
 namespace Infrastructure.Postgres.Data;
 
-public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+public class AppDbContext : IdentityDbContext<
+    ApplicationUser,
+    ApplicationRole,
+    Guid,
+    IdentityUserClaim<Guid>,
+    IdentityUserRole<Guid>,
+    IdentityUserLogin<Guid>,
+    IdentityRoleClaim<Guid>,
+    ApplicationToken>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -26,7 +34,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
         builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
         builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
-        builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+        builder.Entity<ApplicationToken>().ToTable("UserTokens");
 
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 

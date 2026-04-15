@@ -1,7 +1,10 @@
 ﻿using Application.Dtos;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Common.Pagination;
+using Domain.Entities;
 using Domain.Repositories;
+using Domain.Shared;
 using MediatR;
 
 namespace Application.Features.TodoItems.Queries;
@@ -31,7 +34,7 @@ namespace Application.Features.TodoItems.Queries;
 /// - Cơ bản: Lấy tất cả todos
 /// - Advanced: Có thể thêm optional parameters (filterByStatus, sortBy, etc.)
 /// </summary>
-public record GetMyTodosQuery() : IRequest<List<TodoDto>>;
+public record GetMyTodosQuery(PaginationRequest PaginationRequest) : IRequest<PagedResponse<TodoDto>>;
 
 /// <summary>
 /// GetMyTodosQueryHandler: Handler xử lý GetMyTodosQuery
@@ -52,7 +55,7 @@ public record GetMyTodosQuery() : IRequest<List<TodoDto>>;
 /// - Memory: Load tất cả todos vào memory (cân nhắc pagination nếu quá nhiều)
 /// - Mapping: AutoMapper sẽ map properties động
 /// </summary>
-public class GetMyTodosQueryHandler : IRequestHandler<GetMyTodosQuery, List<TodoDto>>
+public class GetMyTodosQueryHandler : IRequestHandler<GetMyTodosQuery, PagedResponse<TodoDto>>
 {
     /// <summary>Repository để query todos từ database</summary>
     private readonly ITodoItemRepository _todoRepository;
@@ -108,35 +111,58 @@ public class GetMyTodosQueryHandler : IRequestHandler<GetMyTodosQuery, List<Todo
     /// - AutoMapper sẽ map properties có cùng tên
     /// - DTO sẽ không chứa sensitive info (password, tokens, etc.)
     /// </summary>
-    public async Task<List<TodoDto>> Handle(
-        GetMyTodosQuery request, 
-        CancellationToken cancellationToken)
+    //public async Task<List<TodoDto>> Handle(
+    //    GetMyTodosQuery request, 
+    //    CancellationToken cancellationToken)
+    //{
+    //    /// <summary>
+    //    /// Bước 1: Lấy current user ID
+    //    /// - Từ JWT token decoded ở middleware
+    //    /// - Đảm bảo chỉ lấy todos của user này
+    //    /// </summary>
+    //    var userId = _currentUserService.UserId;
+
+    //    /// <summary>
+    //    /// Bước 2: Query repository
+    //    /// - GetAllByUserIdAsync: Custom method để query todos by user
+    //    /// - Tự động filter: WHERE UserId = ? AND IsDeleted = false
+    //    /// - Return List<TodoItem> từ database
+    //    /// </summary>
+    //    var todos = await _todoRepository.GetPagedAsync(request.PaginationRequest, false, cancellationToken);
+
+    //    /// <summary>
+    //    /// Bước 3: Map entities → DTOs
+    //    /// - AutoMapper sẽ tự động map:
+    //    ///   + TodoItem.Id → TodoDto.Id
+    //    ///   + TodoItem.Title → TodoDto.Title
+    //    ///   + TodoItem.Priority → TodoDto.Priority
+    //    ///   + etc.
+    //    /// - Lợi ích: Convert complex objects thành simpler DTOs
+    //    /// - Security: Không expose internal fields (password, tokens, etc.)
+    //    /// </summary>
+    //    return _mapper.Map<List<TodoDto>>(todos);
+    //}
+
+    public async Task<PagedResponse<TodoDto>> Handle(GetMyTodosQuery request, CancellationToken cancellationToken)
     {
-        /// <summary>
-        /// Bước 1: Lấy current user ID
-        /// - Từ JWT token decoded ở middleware
-        /// - Đảm bảo chỉ lấy todos của user này
-        /// </summary>
         var userId = _currentUserService.UserId;
+        // Tự động Build Expression (x => x.Status == 1 && x.Priority == 3 ...)
+        // Gọn gàng và an toàn hơn
+        var dynamicExpression = DynamicFilterBuilder.Build<TodoItem>(request?.PaginationRequest?.DynamicFilters);
+        // 1. Gọi Repository để lấy PagedResponse của ENTITY
+        var pagedEntities = await _todoRepository.GetPagedByConditionAsync(x => x.UserId == userId, request.PaginationRequest, trackChanges: false, cancellationToken);
 
-        /// <summary>
-        /// Bước 2: Query repository
-        /// - GetAllByUserIdAsync: Custom method để query todos by user
-        /// - Tự động filter: WHERE UserId = ? AND IsDeleted = false
-        /// - Return List<TodoItem> từ database
-        /// </summary>
-        var todos = await _todoRepository.GetAllByUserIdAsync(userId, cancellationToken);
+        // 2. Dùng AutoMapper để map danh sách Items (Từ List<TodoItem> sang List<TodoDto>)
+        var mappedItems = _mapper.Map<List<TodoDto>>(pagedEntities.Items);
 
-        /// <summary>
-        /// Bước 3: Map entities → DTOs
-        /// - AutoMapper sẽ tự động map:
-        ///   + TodoItem.Id → TodoDto.Id
-        ///   + TodoItem.Title → TodoDto.Title
-        ///   + TodoItem.Priority → TodoDto.Priority
-        ///   + etc.
-        /// - Lợi ích: Convert complex objects thành simpler DTOs
-        /// - Security: Không expose internal fields (password, tokens, etc.)
-        /// </summary>
-        return _mapper.Map<List<TodoDto>>(todos);
+        // 3. Khởi tạo lại PagedResponse mới với kiểu DTO, giữ nguyên các thông số phân trang cũ
+        var pagedResponseDto = new PagedResponse<TodoDto>(
+            mappedItems,
+            pagedEntities.TotalItems,
+            pagedEntities.CurrentPage,
+            pagedEntities.PageSize
+        );
+
+        return pagedResponseDto;
     }
 }

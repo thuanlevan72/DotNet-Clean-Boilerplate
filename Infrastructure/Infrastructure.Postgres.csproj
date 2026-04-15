@@ -29,6 +29,7 @@
 		<ProjectReference Include="..\Infrastructure.Redis\Infrastructure.Redis.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="Data\Configurations\IdentityConfig\" />
 	  <Folder Include="Migrations\" />
 	</ItemGroup>
 </Project>

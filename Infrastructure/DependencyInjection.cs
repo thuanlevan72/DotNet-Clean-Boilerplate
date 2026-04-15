@@ -2,6 +2,7 @@
 using Domain.Repositories;
 using Infrastructure.Postgres.Data;
 using Infrastructure.Postgres.Identity;
+using Infrastructure.Postgres.Identity.Sevices;
 using Infrastructure.Postgres.Repository;
 using Infrastructure.Postgres.Workers;
 using Microsoft.AspNetCore.Identity;

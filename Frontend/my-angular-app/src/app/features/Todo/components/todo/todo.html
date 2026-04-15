@@ -1,0 +1,171 @@
+<div class="max-w-4xl mx-auto p-4">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Todo List</h1>
+    <button
+      routerLink="/create"
+      class="bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow hover:bg-blue-700 transition font-medium"
+    >
+      + New Task
+    </button>
+  </div>
+
+  <ng-container *ngIf="todoData() as data">
+    <div
+      *ngIf="!data.items || data.items.length === 0"
+      class="text-center py-20 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100"
+    >
+      <p class="text-lg">No tasks yet 😴</p>
+      <p class="text-sm">Start by creating a new one</p>
+    </div>
+
+    <div class="space-y-4 mb-6">
+      <div
+        *ngFor="let t of data.items || []"
+        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-start justify-between hover:shadow-md transition"
+        [ngClass]="t.status === 'Done' ? 'opacity-75' : ''"
+      >
+        <div class="flex items-start gap-4 flex-1">
+          <button
+            (click)="toggleStatus(t)"
+            class="w-7 h-7 mt-0.5 rounded-full border-2 flex items-center justify-center transition shrink-0"
+            [ngClass]="
+              t.status === 'Done'
+                ? 'bg-green-500 border-green-500'
+                : 'border-gray-300 hover:border-blue-400'
+            "
+          >
+            <svg
+              *ngIf="t.status === 'Done'"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </button>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap mb-1">
+              <h3
+                class="font-semibold text-gray-800 text-lg"
+                [ngClass]="t.status === 'Done' ? 'line-through text-gray-400' : ''"
+              >
+                {{ t.title }}
+              </h3>
+              <span
+                class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                [class]="getStatusColor(t.status)"
+                >{{ t.status }}</span
+              >
+              <span
+                *ngIf="t.priority !== 'None'"
+                class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                [class]="getPriorityColor(t.priority)"
+                >{{ t.priority }}</span
+              >
+            </div>
+            <p *ngIf="t.description" class="text-sm text-gray-500 mb-2 line-clamp-2">
+              {{ t.description }}
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2 shrink-0 ml-4">
+          <button
+            [routerLink]="['/update', t.id]"
+            class="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
+          >
+            Edit
+          </button>
+          <button
+            (click)="delete(t.id)"
+            class="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="data.totalPages > 1 || data.totalItems > 5"
+      class="flex flex-col sm:flex-row items-center justify-between bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 gap-4"
+    >
+      <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">Hiển thị</span>
+          <select
+            [value]="pageSize()"
+            (change)="onPageSizeChange($event)"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 focus:outline-none cursor-pointer"
+          >
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <p class="text-sm text-gray-700">
+          Showing
+          <span class="font-semibold">{{ (data.currentPage - 1) * data.pageSize + 1 }}</span> to
+          <span class="font-semibold">{{
+            mathMin(data.currentPage * data.pageSize, data.totalItems)
+          }}</span>
+          of
+          <span class="font-semibold">{{ data.totalItems }}</span>
+        </p>
+      </div>
+
+      <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        <button
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="!data.hasPrevious"
+          class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          <span class="sr-only">Previous</span>
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M12.79 5.23a.75.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+
+        <button
+          *ngFor="let p of visiblePages()"
+          (click)="goToPage(p)"
+          [ngClass]="
+            p === currentPage()
+              ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
+          "
+          class="relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-all"
+        >
+          {{ p }}
+        </button>
+
+        <button
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="!data.hasNext"
+          class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          <span class="sr-only">Next</span>
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </ng-container>
+</div>
