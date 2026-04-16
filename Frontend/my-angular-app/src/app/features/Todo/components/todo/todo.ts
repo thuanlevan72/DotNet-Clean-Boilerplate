@@ -5,19 +5,44 @@ import { TodoApiService } from '../../services/todo-api.service';
 import { LoadingService } from '../../../../shared/components/Loading/loading.service';
 import { TodoDto, TodoStatus, PriorityLevel } from '../../models/todo.model';
 import { PagedResponse } from '../../../../shared/models/paged-response.model';
+import { CreateOrUpdateTodo } from '../create-or-update-todo/create-or-update-todo';
+import {
+  getPriorityColor,
+  getPriorityLabel,
+  getStatusColor,
+} from '../../../../shared/utils/enum.util';
 
 @Component({
   selector: 'app-todo',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, CreateOrUpdateTodo],
   templateUrl: './todo.html',
   styleUrl: './todo.css',
 })
 export class Todo implements OnInit {
   todoData = signal<PagedResponse<TodoDto> | null>(null);
+  openCreateModal = signal<boolean>(false);
+  // "Bắt cầu" 2 hàm này thành thuộc tính của class để HTML có thể nhìn thấy
+  readonly getPriorityLabel = getPriorityLabel;
+  readonly getPriorityColor = getPriorityColor;
+  readonly getStatusColor = getStatusColor;
 
   currentPage = signal<number>(1);
   pageSize = signal<number>(10);
+
+  isModalOpen = false;
+  selectedTodo?: TodoDto;
+  text: string = '';
+
+  openModal(todo?: TodoDto) {
+    this.selectedTodo = todo;
+    this.text = 'task tạo mới todo';
+    this.isModalOpen = true;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+  }
 
   visiblePages = computed(() => {
     const data = this.todoData();
@@ -55,6 +80,7 @@ export class Todo implements OnInit {
         this.pageSize.set(data.pageSize);
       }
     } catch (error) {
+      
       console.error('Lỗi tải dữ liệu', error);
     } finally {
       setTimeout(() => this.loadingService.hide(), 0);
@@ -62,7 +88,11 @@ export class Todo implements OnInit {
   }
 
   goToPage(page: number) {
-    if (page === this.currentPage() || page < 1 || (this.todoData() && page > this.todoData()!.totalPages)) {
+    if (
+      page === this.currentPage() ||
+      page < 1 ||
+      (this.todoData() && page > this.todoData()!.totalPages)
+    ) {
       return;
     }
     this.loadTodos(page, this.pageSize());
@@ -83,35 +113,19 @@ export class Todo implements OnInit {
     todo.status = newStatus;
   }
 
-  delete(id: string) {
+  async delete(id: string) {
     if (!confirm('Bạn có chắc muốn xóa công việc này?')) return;
-    this.todoData.update(currentData => {
-      if (!currentData) return null;
-      return {
-        ...currentData,
-        items: currentData.items.filter((t) => t.id !== id),
-        totalItems: currentData.totalItems - 1
-      };
-    });
-  }
-
-  getPriorityColor(priority: PriorityLevel): string {
-    switch (priority) {
-      case 'Urgent': return 'bg-red-100 text-red-700 border-red-200';
-      case 'High': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'Medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'Low': return 'bg-blue-100 text-blue-700 border-blue-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  }
-
-  getStatusColor(status: TodoStatus): string {
-    switch (status) {
-      case 'Done': return 'text-green-600 bg-green-50 border-green-200';
-      case 'InProgress': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'Blocked': return 'text-red-600 bg-red-50 border-red-200';
-      case 'OnHold': return 'text-gray-500 bg-gray-50 border-gray-200';
-      default: return 'text-gray-600 bg-gray-100 border-gray-200';
+    this.loadingService.show();
+    try {
+      this.loadingService.show();
+      await this.todoApiService.DeleteTodo(id);
+      // Sau khi xóa thành công, tải lại danh sách để cập nhật giao diện
+      this.loadTodos();
+    } catch (error) {
+      console.error('Lỗi khi xóa Todo:', error);
+      // Có thể gọi service Toast
+    } finally {
+      this.loadingService.hide();
     }
   }
 }

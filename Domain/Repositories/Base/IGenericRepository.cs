@@ -91,6 +91,21 @@ public interface IGenericRepository<TEntity, TId> where TEntity : BaseEntity<TId
         bool trackChanges = false,
         CancellationToken cancellationToken = default);
 
+    Task<PagedResponse<TEntity>> GetPagedByConditionAsync(
+        Expression<Func<TEntity, bool>> expression,
+    PaginationRequest request,
+    bool trackChanges = false,
+    CancellationToken cancellationToken = default,
+    params Expression<Func<TEntity, object>>[]? includes);
+
+
+    Task<PagedResponse<TResult>> GetPagedByConditionAsync<TResult>(
+    Expression<Func<TEntity, bool>> expression,
+    Expression<Func<TEntity, TResult>> selector,
+    PaginationRequest request,
+    bool trackChanges = false,
+    CancellationToken cancellationToken = default);
+
     Task<List<TEntity>> GetByConditionAsync(Expression<Func<TEntity, bool>> expression, bool trackChanges = false, CancellationToken cancellationToken = default);
 
     /// <summary>

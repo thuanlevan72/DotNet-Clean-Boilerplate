@@ -109,4 +109,8 @@ public interface ITagRepository : IGenericRepository<Tag, int>
     /// - Can also: ORDER BY CreatedAt DESC (recently created first)
     /// </summary>
     Task<List<Tag>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+
+
+    Task<List<Tag>> GetTagsByUserIdAsync(Guid userId, List<int> tagIdS, CancellationToken cancellationToken = default);
 }

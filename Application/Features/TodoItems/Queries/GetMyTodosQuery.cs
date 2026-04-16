@@ -150,7 +150,7 @@ public class GetMyTodosQueryHandler : IRequestHandler<GetMyTodosQuery, PagedResp
         // Gọn gàng và an toàn hơn
         var dynamicExpression = DynamicFilterBuilder.Build<TodoItem>(request?.PaginationRequest?.DynamicFilters);
         // 1. Gọi Repository để lấy PagedResponse của ENTITY
-        var pagedEntities = await _todoRepository.GetPagedByConditionAsync(x => x.UserId == userId, request.PaginationRequest, trackChanges: false, cancellationToken);
+        var pagedEntities = await _todoRepository.GetPagedByConditionAsync(x => x.UserId == userId, request.PaginationRequest, trackChanges: false, cancellationToken, x=>x.Tags, x=> x.Category);
 
         // 2. Dùng AutoMapper để map danh sách Items (Từ List<TodoItem> sang List<TodoDto>)
         var mappedItems = _mapper.Map<List<TodoDto>>(pagedEntities.Items);

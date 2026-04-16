@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { Injectable, signal } from '@angular/core';
-import { User } from '../models/user.model';
+import { User, UserLocalStorage } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -11,6 +11,15 @@ export class AuthService {
   setUser(user: User) {
     this.userSignal.set(user);
     localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  getUser(): UserLocalStorage | null {
+    const userData = localStorage.getItem('user_profile');
+    if (userData) {
+      const user: UserLocalStorage = JSON.parse(userData);
+      return user;
+    }
+    return null;
   }
 
   setToken(token: string, refreshToken: string) {

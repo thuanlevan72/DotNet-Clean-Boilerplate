@@ -86,6 +86,73 @@ public class GenericRepository<TEntity, TId> : IGenericRepository<TEntity, TId> 
         return new PagedResponse<TEntity>(items, totalItems, request.PageNumber, request.PageSize);
     }
 
+    public virtual async Task<PagedResponse<TEntity>> GetPagedByConditionAsync(
+    Expression<Func<TEntity, bool>> expression,
+    PaginationRequest request,
+    bool trackChanges = false,
+    CancellationToken cancellationToken = default,
+    params Expression<Func<TEntity, object>>[]? includes)
+    {
+        var query = _dbSet.Where(expression);
+        // tracking dữ liệu phục vụ cho cần thiết 
+        if (!trackChanges)
+        {
+            query = query.AsNoTracking();
+        }
+
+        // --- Xử lý Include dữ liệu ---
+        if (includes != null && includes.Any())
+        {
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+        }
+
+        // 1. Đếm tổng số bản ghi (Đã lọc theo điều kiện)
+        var totalItems = await query.CountAsync(cancellationToken);
+
+        // 2. Lấy dữ liệu phân trang (Đã lọc và Include)
+        var sql = query
+            .OrderByDescending(x => x.Id) // Lưu ý: TEntity cần phải có property Id để OrderBy chạy được
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize);
+
+
+        var items = await sql.ToListAsync(cancellationToken);
+        // 3. Trả về
+        return new PagedResponse<TEntity>(items, totalItems, request.PageNumber, request.PageSize);
+    }
+
+
+    public virtual async Task<PagedResponse<TResult>> GetPagedByConditionAsync<TResult>(
+    Expression<Func<TEntity, bool>> expression,
+    Expression<Func<TEntity, TResult>> selector,
+    PaginationRequest request,
+    bool trackChanges = false,
+    CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet.Where(expression);
+        // tracking dữ liệu phục vụ cho cần thiết 
+        if (!trackChanges)
+        {
+            query = query.AsNoTracking();
+        }
+
+        // 1. Đếm tổng số bản ghi (Đã lọc theo điều kiện)
+        var totalItems = await query.CountAsync(cancellationToken);
+
+        // 2. Lấy dữ liệu phân trang (Đã lọc và Include)
+        var sql = query
+            .OrderByDescending(x => x.Id) // Lưu ý: TEntity cần phải có property Id để OrderBy chạy được
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize).Select(selector);
+
+        var items = await sql.ToListAsync(cancellationToken);
+        // 3. Trả về
+        return new PagedResponse<TResult>(items, totalItems, request.PageNumber, request.PageSize);
+    }
+
     public virtual void Add(TEntity entity) => _dbSet.Add(entity);
     public virtual void AddRange(IEnumerable<TEntity> entities) => _dbSet.AddRange(entities);
     public virtual void Update(TEntity entity) => _dbSet.Update(entity);

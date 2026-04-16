@@ -109,7 +109,9 @@ public class MappingProfile : Profile
             /// - TodoStatus.Completed → "Completed"
             /// - TodoStatus.Cancelled → "Cancelled"
             /// </summary>
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags))
+            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
 
         /// <summary>
         /// Mapping 2: Category Entity → CategoryDto DTO

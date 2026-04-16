@@ -188,7 +188,7 @@ public class CreateTodoCommandHandler : IRequestHandler<CreateTodoCommand, Guid>
                 if (category == null) 
                     throw new Exception("Danh mục không tồn tại.");
             }
-
+            
 
             /// <summary>
             /// Bước 5: Tạo TodoItem entity
@@ -217,13 +217,13 @@ public class CreateTodoCommandHandler : IRequestHandler<CreateTodoCommand, Guid>
 
             if (request.Tags?.Any() == true)
             {
-                var tags = await _tagRepository.GetByConditionAsync(x=> request.Tags.Contains(x.Id), true,
-                    cancellationToken);
-
-                if (tags?.Any() == true)
+                var tags = await _tagRepository.GetTagsByUserIdAsync(userId, request.Tags, cancellationToken);
+                if(tags?.Any() == true)
+                {
                     todo.Tags = tags;
+                }
             }
-           
+
 
             /// <summary>Bước 6: Add todo vào repository (change tracker)</summary>
             _todoRepository.Add(todo);

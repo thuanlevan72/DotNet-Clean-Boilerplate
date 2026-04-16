@@ -21,4 +21,10 @@ public class TagRepository : GenericRepository<Tag, int>, ITagRepository
             .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<List<Tag>> GetTagsByUserIdAsync(Guid userId, List<int> tagIdS, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet.Where(t => t.UserId == userId &&  !t.IsDeleted && tagIdS.Contains(t.Id)).OrderBy(t => t.Name)
+            .ToListAsync(cancellationToken);
+    }
 }

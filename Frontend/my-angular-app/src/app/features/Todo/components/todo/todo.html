@@ -2,11 +2,19 @@
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Todo List</h1>
     <button
-      routerLink="/create"
-      class="bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow hover:bg-blue-700 transition font-medium"
+      (click)="openCreateModal.set(true)"
+      class="bg-blue-600 text-white px-5 py-2.5 rounded-xl"
     >
-      + New Task
+      + New Task {{ openCreateModal() ? '(Open)' : '(Closed)' }}
     </button>
+    @if (openCreateModal()) {
+      <app-create-or-update-todo
+        (close)="this.openCreateModal.set(false)"
+        (saveSuccess)="this.loadTodos()"
+        [stateTodo]="this.text"
+      ></app-create-or-update-todo>
+    }
+    <!-- <app-create-or-update-todo></app-create-or-update-todo> -->
   </div>
 
   <ng-container *ngIf="todoData() as data">
@@ -50,7 +58,7 @@
               />
             </svg>
           </button>
-          <div class="flex-1">
+          <div class="flex-3">
             <div class="flex items-center gap-3 flex-wrap mb-1">
               <h3
                 class="font-semibold text-gray-800 text-lg"
@@ -64,7 +72,6 @@
                 >{{ t.status }}</span
               >
               <span
-                *ngIf="t.priority !== 'None'"
                 class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
                 [class]="getPriorityColor(t.priority)"
                 >{{ t.priority }}</span
@@ -73,6 +80,18 @@
             <p *ngIf="t.description" class="text-sm text-gray-500 mb-2 line-clamp-2">
               {{ t.description }}
             </p>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap mb-1">
+              @for (tag of t.tags || []; track tag.id) {
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                  [class]="getPriorityColor(t.priority)"
+                >
+                  {{ tag.name }}
+                </span>
+              }
+            </div>
           </div>
         </div>
         <div class="flex flex-col gap-2 shrink-0 ml-4">

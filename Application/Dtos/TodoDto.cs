@@ -109,5 +109,10 @@ public record TodoDto(
     /// - Nếu TodoItem.Category = null → TodoDto.CategoryName = null
     /// - AutoMapper tự động handle nested property navigation
     /// </summary>
-    string? CategoryName
+    CategoryDto? Category,
+
+    /// <summary>
+    /// 
+    /// </summary>
+    List<TagDto>? Tags
 );
